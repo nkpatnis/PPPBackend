@@ -7,6 +7,8 @@ from app.core.config import settings
 from app.db.base import Base
 
 # Import models so they register with Base metadata
+from app.models import material  # noqa: F401
+from app.models import product  # noqa: F401
 from app.models import user  # noqa: F401
 
 config = context.config
