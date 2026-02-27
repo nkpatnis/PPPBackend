@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=mysql+pymysql://${DB_USER:-appuser}:${DB_PASSWORD:-apppassword}@db:3306/${DB_NAME:-ppplanner}
+      - SECRET_KEY=${SECRET_KEY:-local-secret}
+      - PROJECT_NAME=${PROJECT_NAME:-PPP API}
+    env_file:
+      - .env
+
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_NAME:-ppplanner}
+      MYSQL_USER: ${DB_USER:-appuser}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-apppassword}
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
