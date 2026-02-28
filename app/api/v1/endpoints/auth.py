@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 
-from app.core.security import create_access_token, hash_password, verify_password
+from app.core.security import create_access_token, refresh_access_token, hash_password, verify_password, get_current_user
+from app.core.security import oauth2_scheme
+
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.user import LoginRequest, Token, UserCreate, UserResponse
@@ -37,3 +39,12 @@ def login(credentials: LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Account is inactive")
     token = create_access_token({"sub": str(user.id)})
     return {"access_token": token, "token_type": "bearer"}
+
+
+@router.get("/refresh", response_model=Token)
+def refresh(token: str = Depends(oauth2_scheme), user: User = Depends(get_current_user)):
+    if not user.is_active:
+        raise HTTPException(status_code=400, detail="Account is inactive")
+    
+    new_token = refresh_access_token(token)
+    return {"access_token": new_token, "token_type": "bearer"}
